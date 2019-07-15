@@ -189,7 +189,7 @@ set(SRCS
     src/cpp/transport/udp/UDPServerBase.cpp
     src/cpp/transport/tcp/TCPServerBase.cpp
     src/cpp/transport/serial/SerialServerBase.cpp
-    src/cpp/transport/serial/serial_protocol.c
+    src/cpp/transport/serial/SerialProtocol.cpp
     ${TRANSPORT_SRCS}
     $<$<BOOL:${UAGENT_DISCOVERY_PROFILE}>:src/cpp/transport/discovery/DiscoveryServer.cpp>
     $<$<BOOL:${UAGENT_FAST_PROFILE}>:src/cpp/types/TopicPubSubType.cpp>
