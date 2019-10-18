@@ -43,6 +43,9 @@ struct ReadCallbackArgs
 
 typedef const std::function<void (const ReadCallbackArgs&, std::vector<uint8_t>)> read_callback;
 
+using check_space = std::function<size_t (const ReadCallbackArgs&)>;
+
+
 /**
  * @brief The DataReader class
  */
@@ -73,6 +76,7 @@ public:
     bool read(
         const dds::xrce::READ_DATA_Payload& read_data,
         read_callback read_cb,
+        check_space check_cb,
         const ReadCallbackArgs& cb_args);
 
 private:
@@ -84,6 +88,7 @@ private:
     bool start_read(
         const dds::xrce::DataDeliveryControl& delivery_control,
         read_callback read_cb,
+        check_space check_cb,
         const ReadCallbackArgs& cb_args);
 
     bool stop_read();
@@ -91,6 +96,7 @@ private:
     void read_task(
         dds::xrce::DataDeliveryControl delivery_control,
         read_callback read_cb,
+        check_space check_cb,
         ReadCallbackArgs cb_args);
 
 private:

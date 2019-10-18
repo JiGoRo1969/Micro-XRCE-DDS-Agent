@@ -158,7 +158,9 @@ Middleware& DataReader::get_middleware() const
 bool DataReader::read(
         const dds::xrce::READ_DATA_Payload& read_data,
         read_callback read_cb,
+        check_space check_cb,
         const ReadCallbackArgs& cb_args)
+
 {
     dds::xrce::DataDeliveryControl delivery_control;
     if (read_data.read_specification().has_delivery_control())
@@ -189,17 +191,18 @@ bool DataReader::read(
             break;
     }
 
-    return (stop_read() && start_read(delivery_control, read_cb, cb_args));
+    return (stop_read() && start_read(delivery_control, read_cb, check_cb, cb_args));
 }
 
 bool DataReader::start_read(
         const dds::xrce::DataDeliveryControl& delivery_control,
         read_callback read_cb,
+        check_space check_cb,
         const ReadCallbackArgs& cb_args)
 {
     std::lock_guard<std::mutex> lock(mtx_);
     running_cond_ = true;
-    read_thread_ = std::thread(&DataReader::read_task, this, delivery_control, read_cb, cb_args);
+    read_thread_ = std::thread(&DataReader::read_task, this, delivery_control, read_cb, check_cb, cb_args);
     return true;
 }
 
@@ -218,6 +221,7 @@ bool DataReader::stop_read()
 void DataReader::read_task(
         dds::xrce::DataDeliveryControl delivery_control,
         read_callback read_cb,
+        check_space check_cb,
         ReadCallbackArgs cb_args)
 {
     size_t rate = (MAX_BYTES_PER_SECOND_UNLIMITED == delivery_control.max_bytes_per_second())
@@ -234,6 +238,7 @@ void DataReader::read_task(
     while (running_cond_ && !stop_cond)
     {
         std::chrono::milliseconds read_timeout = get_read_timeout(final_time, delivery_control.max_elapsed_time());
+        std::cout << "SPACE = " << check_cb(cb_args) << std::endl;
         if (get_middleware().read_data(get_raw_id(), data, read_timeout))
         {
             std::chrono::milliseconds wait_time = token_bucket.wait_time(data.size());

@@ -54,6 +54,8 @@ public:
 
     bool pop_message(OutputMessagePtr& output_message);
 
+    size_t get_space();
+
 private:
     std::queue<OutputMessagePtr> messages_;
     std::mutex mtx_;
@@ -110,6 +112,12 @@ inline bool NoneOutputStream::pop_message(OutputMessagePtr& output_message)
     return rv;
 }
 
+inline size_t NoneOutputStream::get_space()
+{
+    std::lock_guard<std::mutex> lock(mtx_);
+    return BEST_EFFORT_STREAM_DEPTH - messages_.size();
+}
+
 /****************************************************************************************
  * Best-Effort Output Stream.
  ****************************************************************************************/
@@ -139,6 +147,8 @@ public:
             const T& submessage);
 
     bool pop_message(OutputMessagePtr& output_message);
+
+    size_t get_space();
 
 private:
     std::queue<OutputMessagePtr> messages_;
@@ -200,6 +210,12 @@ inline bool BestEffortOutputStream::pop_message(OutputMessagePtr& output_message
     return rv;
 }
 
+inline size_t BestEffortOutputStream::get_space()
+{
+    std::lock_guard<std::mutex> lock(mtx_);
+    return BEST_EFFORT_STREAM_DEPTH - messages_.size();
+}
+
 /****************************************************************************************
  * Reliable Output Stream.
  ****************************************************************************************/
@@ -232,6 +248,8 @@ public:
     void update_from_acknack(SeqNum first_unacked);
 
     bool fill_heartbeat(dds::xrce::HEARTBEAT_Payload& heartbeat);
+
+    size_t get_space();
 
 private:
     std::map<uint16_t, OutputMessagePtr> messages_;
@@ -406,6 +424,13 @@ inline bool ReliableOutputStream::fill_heartbeat(dds::xrce::HEARTBEAT_Payload& h
     heartbeat.last_unacked_seq_nr(last_unacked_);
     return !messages_.empty();
 }
+
+inline size_t ReliableOutputStream::get_space()
+{
+    std::lock_guard<std::mutex> lock(mtx_);
+    return RELIABLE_STREAM_DEPTH - messages_.size();
+}
+
 
 } // namespace uxr
 } // namespace eprosima

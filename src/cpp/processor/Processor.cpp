@@ -404,7 +404,7 @@ bool Processor::process_read_data_submessage(
 
             /* Launch read data. */
             using namespace std::placeholders;
-            if (!data_reader->read(read_payload, std::bind(&Processor::read_data_callback, this, _1, _2), cb_args))
+            if (!data_reader->read(read_payload, std::bind(&Processor::read_data_callback, this, _1, _2), std::bind(&Processor::check_space, this, _1), cb_args))
             {
                 status = dds::xrce::STATUS_ERR_RESOURCES;
             }
@@ -647,6 +647,14 @@ void Processor::read_data_callback(
         }
     }
 }
+
+size_t Processor::check_space(
+        const ReadCallbackArgs &cb_args)
+{
+    std::shared_ptr<ProxyClient> client = root_.get_client(cb_args.client_key);
+    return client->session().get_output_space(cb_args.stream_id);
+}
+
 
 bool Processor::process_get_info_packet(
         InputPacket&& input_packet,

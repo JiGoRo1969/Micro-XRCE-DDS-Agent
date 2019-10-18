@@ -110,6 +110,10 @@ public:
             dds::xrce::StreamId stream_id,
             dds::xrce::HEARTBEAT_Payload& heartbeat);
 
+    size_t get_output_space(
+            dds::xrce::StreamId stream_id
+            );
+
 private:
     const SessionInfo session_info_;
 
@@ -344,6 +348,28 @@ inline bool Session::fill_heartbeat(
     }
     return rv;
 }
+
+inline size_t Session::get_output_space(
+        dds::xrce::StreamId stream_id)
+{
+    size_t space = 0;
+    if (is_none_stream(stream_id))
+    {
+        space = none_ostream_.get_space();
+    }
+    else if (is_besteffort_stream(stream_id))
+    {
+        std::lock_guard<std::mutex> lock(best_effort_omtx_);
+        space = best_effort_ostreams_[stream_id].get_space();
+    }
+    else
+    {
+        std::lock_guard<std::mutex> lock(reliable_omtx_);
+        space = reliable_ostreams_[stream_id].get_space();
+    }
+    return space;
+}
+
 
 
 } // namespace uxr

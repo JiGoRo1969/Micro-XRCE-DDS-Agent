@@ -56,6 +56,7 @@ TEST_F(NoneOutputStreamTest, StreamCapacity)
         ASSERT_TRUE(none_stream_.push_submessage(session_info_, dds::xrce::WRITE_DATA, write_data));
     }
     ASSERT_FALSE(none_stream_.push_submessage(session_info_, dds::xrce::WRITE_DATA, write_data));
+    ASSERT_EQ(0, none_stream_.get_space());
 
     OutputMessagePtr output_message;
     for (int i = 0; i < BEST_EFFORT_STREAM_DEPTH; ++i)
@@ -63,6 +64,7 @@ TEST_F(NoneOutputStreamTest, StreamCapacity)
         ASSERT_TRUE(none_stream_.pop_message(output_message));
     }
     ASSERT_FALSE(none_stream_.pop_message(output_message));
+    ASSERT_EQ(BEST_EFFORT_STREAM_DEPTH, none_stream_.get_space());
 }
 
 /**

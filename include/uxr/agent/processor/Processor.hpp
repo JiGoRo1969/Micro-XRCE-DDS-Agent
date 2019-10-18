@@ -115,6 +115,9 @@ private:
             const ReadCallbackArgs& cb_args,
             const std::vector<uint8_t>& buffer);
 
+    size_t check_space(
+            const ReadCallbackArgs& cb_args
+            );
 private:
     Server& server_;
     Middleware::Kind middleware_kind_;
